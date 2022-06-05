@@ -56,6 +56,8 @@ public class Character : MonoBehaviour, IPunObservable
         //Set name
         if (pv.IsMine)
         usertext.text = nickname;
+        else
+            usertext.text = DataManager.instance.enemyNickname;
 
         timer = 0;
 
@@ -129,11 +131,11 @@ public class Character : MonoBehaviour, IPunObservable
         //Aqui no tenemos en cuenta donde mira el personaje ni spawns de bala, siempre se ira hacia la derecha
         if (isFlipped)
         {
-            PhotonNetwork.Instantiate("Bullet", transform.position + new Vector3(-1f, 0f, 0f), Quaternion.Euler(0, 0, 180));
+            PhotonNetwork.Instantiate(DataManager.instance.playerRace.raceName + "_Bullet", transform.position + new Vector3(-1f, 0f, 0f), Quaternion.Euler(0, 0, 180));
         }
         else
         {
-            PhotonNetwork.Instantiate("Bullet", transform.position + new Vector3(1f, 0f, 0f), Quaternion.identity);
+            PhotonNetwork.Instantiate(DataManager.instance.playerRace.raceName + "_Bullet", transform.position + new Vector3(1f, 0f, 0f), Quaternion.identity);
         }
         
     }
