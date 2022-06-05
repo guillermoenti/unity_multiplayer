@@ -13,13 +13,17 @@ public class Game_Manager : MonoBehaviour
 
     private void Awake()
     {
-        if (PhotonNetwork.IsMasterClient)
-        {
-            PhotonNetwork.Instantiate("Human", spawnPlayer1.transform.position, Quaternion.identity);
-        }
-        else
-        {
-            PhotonNetwork.Instantiate("Human", spawnPlayer2.transform.position, Quaternion.identity);
-        }
+        
+            if (PhotonNetwork.IsMasterClient)
+            {
+                //Debug.Log("YO SOY :" + PhotonNetwork.NickName + "CON RAZA: " + DataManager.instance.playerRace.raceName + "Y MI ENEMIGO ES: " + DataManager.instance.enemyNickname + " CON LA RAZA: " + DataManager.instance.enemyRace.raceName);
+                PhotonNetwork.Instantiate(DataManager.instance.playerRace.raceName, spawnPlayer1.transform.position, Quaternion.identity);
+            }
+            else
+            {
+                //Debug.Log("YO SOY :" + PhotonNetwork.NickName + "CON RAZA: " + DataManager.instance.playerRace.raceName);
+                PhotonNetwork.Instantiate(DataManager.instance.playerRace.raceName, spawnPlayer2.transform.position, Quaternion.identity);
+            } 
+        
     }
 }

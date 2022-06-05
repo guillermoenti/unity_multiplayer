@@ -9,6 +9,12 @@ public class Photon_Manager : MonoBehaviourPunCallbacks
 
     public static Photon_Manager _PHOTON_MANAGER;
 
+    public int playerIdRace;
+    public int enemyIdRace;
+
+    public Race playerRace;
+    public Race enemyRace;
+
     private void Awake()
     {
         if(_PHOTON_MANAGER != null && _PHOTON_MANAGER != this)
@@ -51,7 +57,17 @@ public class Photon_Manager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         Debug.Log("Me he unido a la sala: " + PhotonNetwork.CurrentRoom.Name + "con " + PhotonNetwork.CurrentRoom.PlayerCount + " jugadores conectados.");
-        PhotonNetwork.LocalPlayer.NickName = DataManager.instance.playerName;
+        Debug.Log("Me he unido: " + PhotonNetwork.NickName);
+        foreach(Player player in PhotonNetwork.CurrentRoom.Players.Values){
+            if (player.NickName != PhotonNetwork.NickName)
+            {
+                DataManager.instance.enemyNickname = player.NickName;
+                Network_Manager._NETWORK_MANAGER.GetRaceByUsername(player.NickName);
+
+            }
+        }
+
+        Debug.Log("Y mi enemigo es:" + DataManager.instance.enemyNickname);
     }
 
     public void CreateRoom(string nameRoom) {
@@ -67,13 +83,15 @@ public class Photon_Manager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        if(PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)
         {
+            DataManager.instance.enemyNickname = newPlayer.NickName;
+            Network_Manager._NETWORK_MANAGER.GetRaceByUsername(newPlayer.NickName);
 
-            Network_Manager._NETWORK_MANAGER.GetRacesOnGame(DataManager.instance.playerName, PhotonNetwork.PlayerListOthers[0].NickName);
-            Debug.Log("ID: " + PhotonNetwork.PlayerListOthers[0].NickName);
             PhotonNetwork.LoadLevel("Ingame");
         }
     }
+
+
 
 }

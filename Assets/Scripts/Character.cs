@@ -15,19 +15,22 @@ public class Character : MonoBehaviour, IPunObservable
     [SerializeField]
     private float speed;
     [SerializeField]
-    private float jump;
+    private float jumpForce;
     [SerializeField]
     private float fireate;
 
-
-    [SerializeField]
-    private float jumpForce = 800f;
+    private float timer;
 
     private Rigidbody2D rb;
     private float desiredMovementAxis = 0f;
 
+    private bool isGrounded;
+    private bool isFlipped = false;
+
     private PhotonView pv;
     private Vector3 enemyPosition = Vector3.zero;
+
+    private Animator anim;
 
     public TextMeshProUGUI usertext;
 
@@ -35,6 +38,8 @@ public class Character : MonoBehaviour, IPunObservable
     {
         rb = GetComponent<Rigidbody2D>();
         pv = GetComponent<PhotonView>();
+
+        anim = GetComponent<Animator>();
 
         usertext = GetComponentInChildren<TextMeshProUGUI>();
 
@@ -50,37 +55,71 @@ public class Character : MonoBehaviour, IPunObservable
         string nickname = GetComponent<PhotonView>().Owner.NickName;
         //Set name
         if (pv.IsMine)
-        usertext.text = speed.ToString();
+        usertext.text = nickname;
 
-        
+        timer = 0;
 
     }
 
     private void Update()
     {
-        if (pv.IsMine) { CheckInputs(); }
-        else { Replicate(); }
-     
+        if (pv.IsMine) 
+        { 
+            
+
+            CheckInputs();
+
+            if (isFlipped && transform.localScale.x > 0)
+            {
+                transform.localScale = new Vector3(transform.localScale.x * - 1, transform.localScale.y, transform.localScale.z);
+                usertext.transform.localScale = new Vector3(usertext.transform.localScale.x * -1, usertext.transform.localScale.y, usertext.transform.localScale.z);
+            }
+            else if(!isFlipped && transform.localScale.x < 0)
+            {
+                transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
+                usertext.transform.localScale = new Vector3(usertext.transform.localScale.x * -1, usertext.transform.localScale.y, usertext.transform.localScale.z);
+            }
+
+            timer += Time.deltaTime;
+        }
+        else
+        {
+            Replicate();
+        }
     }
 
     private void FixedUpdate()
     {
         rb.velocity = new Vector2(desiredMovementAxis * Time.fixedDeltaTime * speed, rb.velocity.y);
+        CheckGrounded();
     }
 
     private void CheckInputs()
     {
         desiredMovementAxis = Input.GetAxisRaw("Horizontal");
-
-        if(Input.GetButtonDown("Jump"))
+        anim.SetBool("isWalking", desiredMovementAxis != 0);
+        if(desiredMovementAxis > 0)
         {
-            rb.AddForce(new Vector2(0f, jumpForce));
+            isFlipped = false;
+        }
+        else if(desiredMovementAxis < 0)
+        {
+            isFlipped = true;
         }
 
+        if(Input.GetButtonDown("Jump") && isGrounded)
+        {
+            rb.AddForce(new Vector2(0f, jumpForce));
+            anim.SetTrigger("jump");
+        }
+
+
+
         //Compruebo si quiero disparar
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+        if (Input.GetKeyDown(KeyCode.LeftControl) && timer >= fireate)
         {
             Shoot();
+            timer = 0;
         }
     }
 
@@ -88,15 +127,21 @@ public class Character : MonoBehaviour, IPunObservable
     private void Shoot()
     {
         //Aqui no tenemos en cuenta donde mira el personaje ni spawns de bala, siempre se ira hacia la derecha
-        PhotonNetwork.Instantiate("Bullet", transform.position + new Vector3(1f, 0f, 0f), Quaternion.identity);
+        if (isFlipped)
+        {
+            PhotonNetwork.Instantiate("Bullet", transform.position + new Vector3(-1f, 0f, 0f), Quaternion.Euler(0, 0, 180));
+        }
+        else
+        {
+            PhotonNetwork.Instantiate("Bullet", transform.position + new Vector3(1f, 0f, 0f), Quaternion.identity);
+        }
+        
     }
 
     private void Replicate()
     {
         transform.position = enemyPosition;
     }
-
-
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) {
 
@@ -126,12 +171,21 @@ public class Character : MonoBehaviour, IPunObservable
 
     private void SetStats()
     {
-        Race race = DataManager.instance.races[DataManager.instance.playerRaceId];
+        Race race = DataManager.instance.playerRace;
 
         health = race.health;
         damage = race.damage;
         speed = race.speed * 200;
-        jump = race.jump;
+        jumpForce = race.jump * 100;
         fireate = race.firerate;
+    }
+
+    private void CheckGrounded()
+    {
+
+        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, 0.2f, 3);
+        //Debug.Log(isGrounded);
+
+        anim.SetBool("isGrounded", isGrounded);
     }
 }

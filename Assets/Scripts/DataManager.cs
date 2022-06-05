@@ -11,9 +11,15 @@ public class DataManager : MonoBehaviour
 
     public string tmpData = "";
 
-    public string playerName = "";
+    public string playerNickname = "";
+    public string enemyNickname = "";
+
+
     public int playerRaceId;
     public int enemyRaceId;
+
+    public Race playerRace;
+    public Race enemyRace;
 
 
     private void Awake()
@@ -59,7 +65,29 @@ public class DataManager : MonoBehaviour
             races.Add(tmpRace);
         }
 
+
+        
+
+        for(int i = 0; i < races.Count; i++)
+        {
+            Debug.Log(races[i].raceName + ", " + races[i].health + ", " +  races[i].damage + ", " + races[i].speed);
+        }
+
+
         SceneManager.LoadScene("Login_Scene");
+    }
+
+    public Race GetRaceById(int _id)
+    {
+        foreach(Race race in races)
+        {
+            if(race.race_id == _id)
+            {
+                return race;
+            }
+        }
+
+        return null;
     }
 
 

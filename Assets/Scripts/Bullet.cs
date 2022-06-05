@@ -21,14 +21,19 @@ public class Bullet : MonoBehaviour
     //Movimiento muy basico de solo avanzar
     private void Start()
     {
-        rb.velocity = new Vector2(speed, 0f);
+        rb.velocity = transform.right * speed;
     }
 
     //Detectamos las colisiones
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        Character player;
+
         //Aplico el daño al jugador (para este ejemplo de codigo lo destruyo directamente)
-        collision.gameObject.GetComponent<Character>().Damage();
+        collision.gameObject.TryGetComponent<Character>(out player);
+
+        if (player)
+            player.Damage();
 
         //Uso RPC para llamar la funcion de todos los clientes conectados en la SALA 
         pv.RPC("NetworkDestroy", RpcTarget.All);

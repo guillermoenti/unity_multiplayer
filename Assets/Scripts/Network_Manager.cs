@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.IO;
 using System;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
 
 public class Network_Manager : MonoBehaviour
 {
@@ -139,7 +140,7 @@ public class Network_Manager : MonoBehaviour
         }
     }
 
-    public void GetRacesOnGame(string user1, string user2)
+    public void GetRaceByUsername(string user)
     {
         try
         {
@@ -155,7 +156,7 @@ public class Network_Manager : MonoBehaviour
             reader = new StreamReader(stream);
 
             //Envio 0 con nick y ususario separados por / ya que son los valores que he definido en el servidor
-            writer.WriteLine("GetRace" + "/" + user1 + "/" + user2);
+            writer.WriteLine("GetRace" + "/" + user);
 
             //Limpio el writer de datos
             writer.Flush();
@@ -181,7 +182,10 @@ public class Network_Manager : MonoBehaviour
         {
             if (dataSplit[1] == "True")
             {
-                DataManager.instance.playerName = dataSplit[2];
+                DataManager.instance.playerNickname = dataSplit[2];
+                PhotonNetwork.NickName = dataSplit[2];
+                DataManager.instance.playerRaceId = int.Parse(dataSplit[3]);
+                DataManager.instance.playerRace = DataManager.instance.GetRaceById(DataManager.instance.playerRaceId);
                 SceneManager.LoadScene("Room_Scene");
             }
             else
@@ -195,8 +199,8 @@ public class Network_Manager : MonoBehaviour
         }
         if (dataSplit[0] == "RaceResponse")
         {
-            DataManager.instance.playerRaceId = int.Parse(dataSplit[1]);
-            DataManager.instance.enemyRaceId = int.Parse(dataSplit[2]);
+            DataManager.instance.enemyRaceId = int.Parse(dataSplit[1]);
+            DataManager.instance.enemyRace = DataManager.instance.GetRaceById(DataManager.instance.enemyRaceId);
         }
     }
 }
