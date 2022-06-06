@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 public class Room_UI_Manager : MonoBehaviour
 {
     [SerializeField]
@@ -11,10 +12,10 @@ public class Room_UI_Manager : MonoBehaviour
     private Button joinButton;
 
     [SerializeField]
-    private Text createText;
+    private TextMeshProUGUI createText;
 
     [SerializeField]
-    private Text joinText;
+    private TextMeshProUGUI joinText;
 
 
     private void Awake()
